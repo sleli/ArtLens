@@ -10,6 +10,7 @@
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
+    "seed": "tsx prisma/seed.ts",
     "postinstall": "prisma generate && prisma db push"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "jsdom": "^26.1.0",
     "prisma": "^6.5.0",
     "tailwindcss": "^4.1.4",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "vitest": "^3.2.2"
   }

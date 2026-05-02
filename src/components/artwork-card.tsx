@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 export interface Artwork {
   id: string;
@@ -20,6 +21,12 @@ interface ArtworkCardProps {
 
 export function ArtworkCard({ artwork }: ArtworkCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setImgError(false);
+    setIsLoading(true);
+  }, [artwork.id]);
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-neutral-900">
@@ -28,12 +35,27 @@ export function ArtworkCard({ artwork }: ArtworkCardProps) {
           <span className="text-neutral-400">Immagine non disponibile</span>
         </div>
       ) : (
-        <img
-          src={artwork.imageUrl}
-          alt={artwork.title}
-          className="h-full w-full object-cover"
-          onError={() => setImgError(true)}
-        />
+        <>
+          {isLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-neutral-900">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-neutral-600 border-t-white" />
+            </div>
+          )}
+          <Image
+            src={artwork.imageUrl}
+            alt={artwork.title}
+            fill
+            className="object-cover"
+            onError={() => {
+              setImgError(true);
+              setIsLoading(false);
+            }}
+            onLoad={() => setIsLoading(false)}
+            priority
+            sizes="100vw"
+            unoptimized
+          />
+        </>
       )}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6 pb-10">
         <h2 className="text-2xl font-bold text-white">{artwork.title}</h2>

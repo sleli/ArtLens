@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArtworkCard, type Artwork } from "@/components/artwork-card";
 
 interface ArtworkFeedProps {
@@ -9,6 +9,21 @@ interface ArtworkFeedProps {
 
 export function ArtworkFeed({ artworks }: ArtworkFeedProps) {
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (artworks.length === 0) return;
+
+    const preloadIndices = [
+      (index + 1) % artworks.length,
+      (index - 1 + artworks.length) % artworks.length,
+    ];
+
+    preloadIndices.forEach((i) => {
+      if (i === index) return;
+      const img = new Image();
+      img.src = artworks[i].imageUrl;
+    });
+  }, [index, artworks]);
 
   if (artworks.length === 0) {
     return (
