@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ArtLens — Il mio quadro</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .profile-main { max-width: 1280px; margin: 0 auto; width: 100%; }
+
+    .hero {
+      padding: var(--space-16) var(--space-8) var(--space-12);
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-12);
+      align-items: end;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .hero-meta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: var(--space-5);
+      display: flex;
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .hero-meta::before {
+      content: '';
+      width: 36px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(3.5rem, 9vw, 7.5rem);
+      font-weight: 300;
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+    }
+    .hero h1 .name {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .hero h1 .small {
+      display: block;
+      font-size: 0.4em;
+      font-style: italic;
+      font-weight: 300;
+      color: var(--ink-soft);
+      margin-top: var(--space-3);
+      letter-spacing: -0.02em;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-1) var(--space-6);
+      padding-bottom: var(--space-2);
+    }
+    .stat-cell {
+      border-top: 1px solid var(--ink);
+      padding: var(--space-3) 0;
+    }
+    .stat-cell .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .stat-cell.like .stat-num { color: var(--accent); }
+    .stat-cell .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: var(--space-2);
+    }
+
+    /* Manifesto */
+    .manifesto {
+      padding: var(--space-12) var(--space-8);
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: var(--space-8);
+      border-bottom: 1px solid var(--rule);
+    }
+    .manifesto-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .manifesto p {
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(1.4rem, 2.4vw, 2rem);
+      line-height: 1.35;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+    .manifesto p em {
+      color: var(--accent);
+      font-style: italic;
+    }
+    .manifesto-sign {
+      align-self: end;
+      text-align: right;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    /* Panels grid */
+    .panels {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1px;
+      background: var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .panel {
+      background: var(--bg);
+      padding: var(--space-8);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: var(--space-6);
+    }
+
+    .panel-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    .panel-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .panel-num {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+    }
+
+    .panel h2 {
+      font-size: 1.6rem;
+      margin-bottom: var(--space-6);
+      font-weight: 400;
+    }
+    .panel h2 em { font-style: italic; font-weight: 300; color: var(--accent); }
+
+    /* Layout */
+    .panel-styles { grid-column: span 7; }
+    .panel-artists { grid-column: span 5; }
+    .panel-period { grid-column: span 7; }
+    .panel-palette { grid-column: span 5; }
+    .panel-emotions { grid-column: span 12; background: var(--ink); color: var(--bg); }
+    .panel-emotions .panel-tag { color: var(--bg); }
+    .panel-emotions .panel-tag::before { background: var(--accent-soft); }
+    .panel-emotions h2 em { color: var(--accent-soft); }
+
+    /* Bar chart */
+    .bar-row {
+      display: grid;
+      grid-template-columns: 180px 1fr 70px;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) 0;
+      border-bottom: 1px dotted rgba(26,23,20,0.18);
+    }
+    .bar-row:last-child { border-bottom: none; }
+    .bar-row .bar-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+    .bar-row .bar-name em { font-style: italic; color: var(--muted); font-size: 0.85em; }
+    .bar-track {
+      height: 12px;
+      background: rgba(26,23,20,0.06);
+      position: relative;
+    }
+    .bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      background: var(--ink);
+      transition: width 600ms;
+    }
+    .bar-fill.warm { background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
+    .bar-fill.cool { background: var(--muted); opacity: 0.4; }
+    .bar-pct {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--ink);
+      text-align: right;
+    }
+
+    /* Top artists */
+    .artist-list {
+      list-style: none;
+      counter-reset: artist;
+    }
+    .artist-row {
+      counter-increment: artist;
+      display: grid;
+      grid-template-columns: 36px 56px 1fr auto;
+      gap: var(--space-4);
+      align-items: center;
+      padding: var(--space-3) 0;
+      border-bottom: 1px dotted rgba(26,23,20,0.18);
+    }
+    .artist-row:last-child { border-bottom: none; }
+    .artist-row::before {
+      content: counter(artist, decimal-leading-zero);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .artist-thumb {
+      width: 56px;
+      height: 56px;
+      background: var(--bg-warm);
+      overflow: hidden;
+    }
+    .artist-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .artist-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+    }
+    .artist-name em { font-style: italic; color: var(--muted); font-size: 0.85em; display: block; }
+    .artist-score {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    /* Period timeline */
+    .timeline {
+      position: relative;
+      padding: var(--space-10) 0 var(--space-4);
+    }
+    .timeline-axis {
+      position: relative;
+      height: 1px;
+      background: var(--ink);
+      margin: 0 var(--space-4);
+    }
+    .timeline-tick {
+      position: absolute;
+      top: -8px;
+      width: 1px;
+      height: 16px;
+      background: var(--ink);
+    }
+    .timeline-year {
+      position: absolute;
+      top: 18px;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .timeline-band {
+      position: absolute;
+      top: -32px;
+      height: 14px;
+      background: var(--accent);
+      opacity: 0.2;
+      transform: translateY(0);
+    }
+    .timeline-band.strong { opacity: 0.85; }
+    .timeline-band-label {
+      position: absolute;
+      top: -54px;
+      transform: translateX(-50%);
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    /* Palette */
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0;
+      aspect-ratio: 7 / 2.6;
+      margin-bottom: var(--space-4);
+    }
+    .palette-swatch {
+      position: relative;
+      display: flex;
+      align-items: end;
+      padding: var(--space-3);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+    }
+    .palette-swatch.light { color: var(--ink); }
+    .palette-pct {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 400;
+    }
+
+    /* Emotions */
+    .emotion-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3) var(--space-6);
+      margin-top: var(--space-4);
+      align-items: baseline;
+    }
+    .emotion {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 300;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .emotion.s1 { font-size: 1.4rem; opacity: 0.4; }
+    .emotion.s2 { font-size: 2rem; opacity: 0.6; }
+    .emotion.s3 { font-size: 2.8rem; opacity: 0.8; }
+    .emotion.s4 { font-size: 3.6rem; color: var(--accent-soft); }
+    .emotion.s5 { font-size: 4.6rem; color: var(--accent-soft); font-weight: 400; }
+
+    .panel-cta {
+      padding: var(--space-12) var(--space-8);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-8);
+      align-items: end;
+    }
+    .panel-cta h3 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      max-width: 14ch;
+      font-weight: 400;
+    }
+    .panel-cta h3 em { color: var(--accent); font-style: italic; font-weight: 300; }
+    .panel-cta p {
+      max-width: 50ch;
+      color: var(--ink-soft);
+      margin-top: var(--space-4);
+    }
+
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; gap: var(--space-8); padding: var(--space-10) var(--space-4) var(--space-6); }
+      .panel-styles, .panel-artists, .panel-period, .panel-palette, .panel-emotions { grid-column: span 12; }
+      .manifesto { grid-template-columns: 1fr; padding: var(--space-8) var(--space-4); }
+      .bar-row { grid-template-columns: 130px 1fr 50px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a href="index.html" class="brand">
+        <span class="brand-mark"><span></span></span>
+        <span class="brand-text">Art<em>Lens</em></span>
+      </a>
+      <nav class="nav">
+        <a href="index.html">Esplora</a>
+        <a href="profile.html" class="active">Il mio quadro</a>
+        <a href="discover.html">Scopri</a>
+      </nav>
+      <div class="user-chip">
+        <span>giulia.r</span>
+        <span class="user-avatar">G</span>
+      </div>
+    </header>
+
+    <main class="profile-main">
+      <!-- Hero / Masthead -->
+      <section class="hero">
+        <div>
+          <div class="hero-meta">
+            <span>Edizione N° 04 · Maggio 2026</span>
+            <span>·</span>
+            <span>Catalogo personale</span>
+          </div>
+          <h1>
+            Il quadro<br>
+            di <span class="name">Giulia</span>
+            <span class="small">— l'autoritratto fatto di scelte, non di volti.</span>
+          </h1>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-cell">
+            <div class="stat-num">73</div>
+            <div class="stat-label">Opere viste</div>
+          </div>
+          <div class="stat-cell like">
+            <div class="stat-num">41</div>
+            <div class="stat-label">Mi parlano</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-num">32</div>
+            <div class="stat-label">Lasciate andare</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-num">12</div>
+            <div class="stat-label">In collezione ★</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Manifesto -->
+      <section class="manifesto">
+        <div class="manifesto-tag">Manifesto · ATTO I</div>
+        <p>
+          Ami i quadri che <em>si muovono</em> — i cieli che ribollono, l'acqua che si arrotola su sé stessa, la pennellata che non sta ferma. Tutto ciò che è lucido, fotografico, bloccato in posa, ti scivola addosso. Cerchi <em>la mano dell'artista</em>, non la sua precisione.
+        </p>
+        <div class="manifesto-sign">
+          ArtLens · 73 opere · 41 affinità<br>
+          02 Maggio 2026
+        </div>
+      </section>
+
+      <!-- Panels grid -->
+      <section class="panels">
+        <!-- Styles -->
+        <div class="panel panel-styles">
+          <div class="panel-head">
+            <span class="panel-tag">Stili che ti parlano</span>
+            <span class="panel-num">PNL · 01</span>
+          </div>
+          <h2>Le correnti del tuo <em>sguardo</em></h2>
+
+          <div class="bar-row">
+            <div class="bar-name">Espressionismo <em>movimento</em></div>
+            <div class="bar-track"><div class="bar-fill warm" style="width: 87%"></div></div>
+            <div class="bar-pct">87%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Post-impressionismo</div>
+            <div class="bar-track"><div class="bar-fill warm" style="width: 78%"></div></div>
+            <div class="bar-pct">78%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Notturni <em>+ paesaggi onirici</em></div>
+            <div class="bar-track"><div class="bar-fill warm" style="width: 71%"></div></div>
+            <div class="bar-pct">71%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Ukiyo-e giapponese</div>
+            <div class="bar-track"><div class="bar-fill" style="width: 52%"></div></div>
+            <div class="bar-pct">52%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Simbolismo</div>
+            <div class="bar-track"><div class="bar-fill" style="width: 44%"></div></div>
+            <div class="bar-pct">44%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Barocco <em>chiaroscuro</em></div>
+            <div class="bar-track"><div class="bar-fill cool" style="width: 22%"></div></div>
+            <div class="bar-pct">22%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-name">Iperrealismo</div>
+            <div class="bar-track"><div class="bar-fill cool" style="width: 11%"></div></div>
+            <div class="bar-pct">11%</div>
+          </div>
+        </div>
+
+        <!-- Artists -->
+        <div class="panel panel-artists">
+          <div class="panel-head">
+            <span class="panel-tag">I tuoi cinque</span>
+            <span class="panel-num">PNL · 02</span>
+          </div>
+          <h2>Artisti che <em>tornano</em></h2>
+
+          <ol class="artist-list">
+            <li class="artist-row">
+              <div class="artist-thumb"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg/200px-Van_Gogh_-_Starry_Night_-_Google_Art_Project.jpg" alt=""></div>
+              <div class="artist-name">Vincent van Gogh<em>1853 — 1890 · Olanda</em></div>
+              <div class="artist-score">+38</div>
+            </li>
+            <li class="artist-row">
+              <div class="artist-thumb"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/The_Great_Wave_off_Kanagawa.jpg/200px-The_Great_Wave_off_Kanagawa.jpg" alt=""></div>
+              <div class="artist-name">Katsushika Hokusai<em>1760 — 1849 · Giappone</em></div>
+              <div class="artist-score">+24</div>
+            </li>
+            <li class="artist-row">
+              <div class="artist-thumb"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Edvard_Munch%2C_1893%2C_The_Scream%2C_oil%2C_tempera_and_pastel_on_cardboard%2C_91_x_73_cm%2C_National_Gallery_of_Norway.jpg/200px-Edvard_Munch%2C_1893%2C_The_Scream%2C_oil%2C_tempera_and_pastel_on_cardboard%2C_91_x_73_cm%2C_National_Gallery_of_Norway.jpg" alt=""></div>
+              <div class="artist-name">Edvard Munch<em>1863 — 1944 · Norvegia</em></div>
+              <div class="artist-score">+19</div>
+            </li>
+            <li class="artist-row">
+              <div class="artist-thumb"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Water-Lilies-and-Japanese-Bridge-%281897-1899%29-Monet.jpg/200px-Water-Lilies-and-Japanese-Bridge-%281897-1899%29-Monet.jpg" alt=""></div>
+              <div class="artist-name">Claude Monet<em>1840 — 1926 · Francia</em></div>
+              <div class="artist-score">+15</div>
+            </li>
+            <li class="artist-row">
+              <div class="artist-thumb"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg/200px-The_Kiss_-_Gustav_Klimt_-_Google_Cultural_Institute.jpg" alt=""></div>
+              <div class="artist-name">Gustav Klimt<em>1862 — 1918 · Austria</em></div>
+              <div class="artist-score">+11</div>
+            </li>
+          </ol>
+        </div>
+
+        <!-- Period -->
+        <div class="panel panel-period">
+          <div class="panel-head">
+            <span class="panel-tag">Linea del tempo</span>
+            <span class="panel-num">PNL · 03</span>
+          </div>
+          <h2>I secoli che <em>ti scelgono</em></h2>
+
+          <div class="timeline">
+            <div class="timeline-axis">
+              <div class="timeline-band" style="left: 0%; width: 18%;"></div>
+              <div class="timeline-band-label" style="left: 9%;">Barocco</div>
+
+              <div class="timeline-band" style="left: 28%; width: 12%;"></div>
+              <div class="timeline-band-label" style="left: 34%;">Romanticismo</div>
+
+              <div class="timeline-band strong" style="left: 50%; width: 22%;"></div>
+              <div class="timeline-band-label" style="left: 61%;">Post-impressionismo</div>
+
+              <div class="timeline-band strong" style="left: 74%; width: 14%;"></div>
+              <div class="timeline-band-label" style="left: 81%;">Espressionismo</div>
+
+              <div class="timeline-tick" style="left: 0%"></div>
+              <div class="timeline-year" style="left: 0%">1600</div>
+              <div class="timeline-tick" style="left: 25%"></div>
+              <div class="timeline-year" style="left: 25%">1750</div>
+              <div class="timeline-tick" style="left: 50%"></div>
+              <div class="timeline-year" style="left: 50%">1850</div>
+              <div class="timeline-tick" style="left: 75%"></div>
+              <div class="timeline-year" style="left: 75%">1900</div>
+              <div class="timeline-tick" style="left: 100%"></div>
+              <div class="timeline-year" style="left: 100%">1950</div>
+            </div>
+          </div>
+
+          <p style="margin-top: var(--space-10); color: var(--ink-soft); max-width: 56ch;">
+            Ti accendi tra <em>1880 e 1920</em>: il momento in cui la pittura smette di descrivere il mondo e inizia a descrivere chi lo guarda. Il Barocco ti tocca poco — troppa scenografia.
+          </p>
+        </div>
+
+        <!-- Palette -->
+        <div class="panel panel-palette">
+          <div class="panel-head">
+            <span class="panel-tag">Palette emotiva</span>
+            <span class="panel-num">PNL · 04</span>
+          </div>
+          <h2>I colori che <em>ricorrono</em></h2>
+
+          <div class="palette">
+            <div class="palette-swatch" style="background: #1c2952"><div><div class="palette-pct">28%</div>blu notte</div></div>
+            <div class="palette-swatch" style="background: #d4a02a"><div><div class="palette-pct">19%</div>oro</div></div>
+            <div class="palette-swatch light" style="background: #e8d6a8"><div><div class="palette-pct">14%</div>avorio</div></div>
+            <div class="palette-swatch" style="background: #6b8e4e"><div><div class="palette-pct">12%</div>verde mare</div></div>
+            <div class="palette-swatch" style="background: #8b3a26"><div><div class="palette-pct">11%</div>terra</div></div>
+            <div class="palette-swatch" style="background: #2a2724"><div><div class="palette-pct">9%</div>inchiostro</div></div>
+            <div class="palette-swatch" style="background: #c46a47"><div><div class="palette-pct">7%</div>rame</div></div>
+          </div>
+
+          <p style="color: var(--ink-soft); margin-top: var(--space-2); font-size: 0.92rem;">
+            Estratta dai 41 quadri che ti hanno colpito. Domina il <em>blu notte</em>: cieli, acqua, atmosfere serali.
+          </p>
+        </div>
+
+        <!-- Emotions -->
+        <div class="panel panel-emotions">
+          <div class="panel-head">
+            <span class="panel-tag">Stati d'animo · vocabolario</span>
+            <span class="panel-num">PNL · 05</span>
+          </div>
+          <h2 style="color: var(--bg);">Quando un'opera ti <em>parla</em>, di solito è perché ti fa sentire</h2>
+
+          <div class="emotion-cloud">
+            <span class="emotion s5">malinconica</span>
+            <span class="emotion s4">in movimento</span>
+            <span class="emotion s4">curiosa</span>
+            <span class="emotion s3">sospesa</span>
+            <span class="emotion s3">spaesata</span>
+            <span class="emotion s3">presente</span>
+            <span class="emotion s2">tenera</span>
+            <span class="emotion s2">vigile</span>
+            <span class="emotion s2">infinita</span>
+            <span class="emotion s1">arrabbiata</span>
+            <span class="emotion s1">eroica</span>
+            <span class="emotion s1">trionfante</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- CTA -->
+      <section class="panel-cta">
+        <div>
+          <h3>Pronta per <em>cinque opere nuove</em>, scelte dal tuo profilo?</h3>
+          <p>Ogni settimana ArtLens ti consegna una piccola mostra personale, costruita sui tuoi 73 swipe. Le opere già viste sono escluse.</p>
+        </div>
+        <a href="discover.html" class="btn btn-accent">Apri Scopri →</a>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>ArtLens · Catalogo personale di Giulia · Edizione 04</span>
+      <span>Aggiornato 02 Maggio 2026</span>
+    </footer>
+  </div>
+</body>
+</html>

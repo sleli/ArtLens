@@ -18,3 +18,17 @@ model User {
 
   @@map("users")
 }
+
+model Artwork {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String
+  year        Int
+  imageUrl    String
+  style       String?
+  period      String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@map("artworks")
+}
