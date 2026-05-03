@@ -8,27 +8,48 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(uuid())
-  supabaseId String   @unique
-  email      String   @unique
-  name       String?
-  image      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String        @id @default(uuid())
+  supabaseId   String        @unique
+  email        String        @unique
+  name         String?
+  image        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  interactions Interaction[]
 
   @@map("users")
 }
 
 model Artwork {
-  id          String   @id @default(uuid())
-  title       String
-  artist      String
-  year        Int
-  imageUrl    String
-  style       String?
-  period      String?
-  description String?
-  createdAt   DateTime @default(now())
+  id           String        @id @default(uuid())
+  title        String
+  artist       String
+  year         Int
+  imageUrl     String
+  style        String?
+  period       String?
+  description  String?
+  createdAt    DateTime      @default(now())
+  interactions Interaction[]
 
   @@map("artworks")
+}
+
+enum InteractionType {
+  LIKE
+  DISLIKE
+}
+
+model Interaction {
+  id        String          @id @default(uuid())
+  userId    String
+  artworkId String
+  type      InteractionType
+  createdAt DateTime        @default(now())
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  artwork Artwork @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, artworkId])
+  @@map("interactions")
 }

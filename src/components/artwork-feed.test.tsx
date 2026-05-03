@@ -1,6 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ArtworkFeed } from "./artwork-feed";
+
+// Mock fetch per la chiamata API
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
 
 const artworks = [
   {
@@ -39,6 +43,11 @@ const artworks = [
 ];
 
 describe("ArtworkFeed", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockFetch.mockResolvedValue({ ok: true });
+  });
+
   it("renders empty state when no artworks", () => {
     render(<ArtworkFeed artworks={[]} />);
     expect(screen.getByText("Nessuna opera disponibile")).toBeInTheDocument();
@@ -50,34 +59,100 @@ describe("ArtworkFeed", () => {
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
   });
 
-  it("advances to next artwork on next button click", () => {
+  it("advances to next artwork on Like button click", async () => {
     render(<ArtworkFeed artworks={artworks} />);
-    fireEvent.click(screen.getByLabelText("Prossima opera"));
-    expect(screen.getByText("La Notte Stellata")).toBeInTheDocument();
+
+    const likeButton = screen.getByLabelText("Like");
+    fireEvent.click(likeButton);
+
+    // Simula fine transizione CSS
+    const cardWrapper = likeButton
+      .closest(".relative")
+      ?.querySelector(".transition-all");
+    if (cardWrapper) {
+      fireEvent.transitionEnd(cardWrapper);
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText("La Notte Stellata")).toBeInTheDocument();
+    });
     expect(screen.getByText("2 / 3")).toBeInTheDocument();
   });
 
-  it("wraps around from last to first", () => {
+  it("advances to next artwork on Dislike button click", async () => {
     render(<ArtworkFeed artworks={artworks} />);
-    fireEvent.click(screen.getByLabelText("Prossima opera"));
-    fireEvent.click(screen.getByLabelText("Prossima opera"));
-    fireEvent.click(screen.getByLabelText("Prossima opera"));
-    expect(screen.getByText("Mona Lisa")).toBeInTheDocument();
+
+    const dislikeButton = screen.getByLabelText("Dislike");
+    fireEvent.click(dislikeButton);
+
+    const cardWrapper = dislikeButton
+      .closest(".relative")
+      ?.querySelector(".transition-all");
+    if (cardWrapper) {
+      fireEvent.transitionEnd(cardWrapper);
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText("La Notte Stellata")).toBeInTheDocument();
+    });
+    expect(screen.getByText("2 / 3")).toBeInTheDocument();
+  });
+
+  it("wraps around from last to first after 3 likes", async () => {
+    render(<ArtworkFeed artworks={artworks} />);
+
+    for (let i = 0; i < 3; i++) {
+      const likeButton = screen.getByLabelText("Like");
+      fireEvent.click(likeButton);
+
+      const cardWrapper = likeButton
+        .closest(".relative")
+        ?.querySelector(".transition-all");
+      if (cardWrapper) {
+        fireEvent.transitionEnd(cardWrapper);
+      }
+
+      // Attendi che il componente si aggiorni
+      await waitFor(() => {
+        expect(screen.getByLabelText("Like")).not.toBeDisabled();
+      });
+    }
+
+    await waitFor(() => {
+      expect(screen.getByText("Mona Lisa")).toBeInTheDocument();
+    });
     expect(screen.getByText("1 / 3")).toBeInTheDocument();
   });
 
-  it("goes to previous artwork on prev button click", () => {
+  it("calls POST /api/interactions on Like", async () => {
     render(<ArtworkFeed artworks={artworks} />);
-    fireEvent.click(screen.getByLabelText("Prossima opera"));
-    fireEvent.click(screen.getByLabelText("Opera precedente"));
-    expect(screen.getByText("Mona Lisa")).toBeInTheDocument();
-    expect(screen.getByText("1 / 3")).toBeInTheDocument();
+
+    const likeButton = screen.getByLabelText("Like");
+    fireEvent.click(likeButton);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/interactions",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artworkId: "1", type: "LIKE" }),
+      })
+    );
   });
 
-  it("wraps around from first to last when going prev", () => {
+  it("calls POST /api/interactions on Dislike", async () => {
     render(<ArtworkFeed artworks={artworks} />);
-    fireEvent.click(screen.getByLabelText("Opera precedente"));
-    expect(screen.getByText("Guernica")).toBeInTheDocument();
-    expect(screen.getByText("3 / 3")).toBeInTheDocument();
+
+    const dislikeButton = screen.getByLabelText("Dislike");
+    fireEvent.click(dislikeButton);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/interactions",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artworkId: "1", type: "DISLIKE" }),
+      })
+    );
   });
 });
